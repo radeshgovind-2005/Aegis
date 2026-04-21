@@ -1,0 +1,55 @@
+name: Deploy Production
+
+# Manual trigger only. Requires the human to navigate to
+# Actions → Deploy Production → Run workflow.
+# Additionally guarded by the `production` GitHub Environment,
+# which should be configured with required reviewers.
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "deploy-prod" to confirm'
+        required: true
+        type: string
+
+jobs:
+  deploy:
+    name: Deploy to production
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+
+    steps:
+      - name: Validate confirmation
+        run: |
+          if [ "${{ github.event.inputs.confirm }}" != "deploy-prod" ]; then
+            echo "::error::Confirmation string missing or incorrect. Aborting."
+            exit 1
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify
+        run: npm run verify
+
+      - name: Deploy
+        run: npx wrangler deploy --env production
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Tag release
+        run: |
+          TAG="prod-$(date -u +%Y-%m-%d)-${GITHUB_SHA::7}"
+          git tag "$TAG"
+          git push origin "$TAG"

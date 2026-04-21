@@ -1,0 +1,24 @@
+# Copy this file to .dev.vars (which is gitignored) and fill in values.
+# .dev.vars is loaded automatically by `wrangler dev`.
+#
+# Never commit real secrets. If a secret ever lands in git, rotate it
+# immediately and force-push only if you are certain no one else has
+# pulled the offending commit.
+
+# ---------------------------------------------------------------
+# Phase 3+ — required once you start working with real Workers AI
+# and Vectorize. Not needed for Phases 0–2.
+# ---------------------------------------------------------------
+
+# Cloudflare account ID (find in the dashboard sidebar).
+CLOUDFLARE_ACCOUNT_ID=""
+
+# API token with scopes: Workers AI (Read), Vectorize (Edit),
+# D1 (Edit), Workers KV Storage (Edit), Queues (Edit).
+# Generate at https://dash.cloudflare.com/profile/api-tokens.
+CLOUDFLARE_API_TOKEN=""
+
+# ---------------------------------------------------------------
+# Phase 5+ — development-only observability endpoint guard.
+# ---------------------------------------------------------------
+DEV_TOKEN=""
