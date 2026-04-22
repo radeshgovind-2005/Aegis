@@ -172,6 +172,31 @@ Format per entry:
 
 ---
 
+## 2026-04-22 — Verify task 0.5 — docs/ memory files confirmed, dev-server recipe added
+
+**Context:** Per DECISIONS.md (2026-04-22 — Bootstrap commit pre-satisfies Phase 0 tasks 0.3–0.5), task 0.5 is verification-only — the docs/ memory files and manual-testing/ directory pre-exist from commit `9de89c8`. This entry records the verification outcome.
+
+**Options:** N/A — no implementation choices. One spec gap (missing `npm run dev` / localhost:8787 recipe step in `docs/manual-testing/phase-00.md`) was identified and corrected. All other files accepted as-is.
+
+**Decision:**
+- `docs/DECISIONS.md`: confirmed present, header intact, ADR-lite format documented. Eight prior entries, all in correct shape.
+- `docs/HACKS.md`: confirmed present, header intact, one entry, correct shape.
+- `docs/TODO.md`: confirmed present, header intact, seven entries, all match format.
+- `docs/ISSUES.md`: confirmed present, header intact, `_(empty)_` placeholder — correct.
+- `docs/ROADMAP_CHANGES.md`: confirmed present, header intact, `_(empty)_` placeholder — correct.
+- `docs/manual-testing/README.md`: confirmed present, 4-point recipe structure described accurately.
+- `docs/manual-testing/phase-00.md`: gap found and corrected. Task 0.5 spec explicitly requires a "run `npm run dev`, hit `localhost:8787`" recipe; no such section existed. A dev-server smoke-test section was added, noting the Worker is the wrangler-init Hello World handler with no Aegis logic wired yet; recipe will be replaced in Phase 1.
+- `docs/_templates/`: referenced by task spec text ("see `docs/_templates/`") but the directory does not exist. File headers serve the same purpose. Dangling reference tracked in TODO.md as a low-priority docs-only cleanup.
+- `docs/AGENTS.md`: present, Cloudflare Workers reference doc for Claude Code (docs URLs, common commands, error codes). Not a Phase 0 deliverable; no action required.
+
+**Rationale:** All deliverables satisfy acceptance criteria. The one corrected gap is explicitly required by the task spec and is a documentation-only addition within verification-task scope.
+
+**Consequences:** `docs/manual-testing/phase-00.md` gains a dev-server smoke-test section. `docs/TODO.md` gains one low-priority cleanup entry for the `_templates/` reference.
+
+**Links:** commit `9de89c8`, `docs/manual-testing/phase-00.md`, `docs/phases/phase-00-scaffold.md` task 0.5, Phase: 00 | Task: 0.5-docs-memory-files
+
+---
+
 ## 2026-04-21 — Repository scaffold and guardrails
 
 **Context:** Project start. Need a structure that lets a fresh Claude Code session pick up deterministically and enforces TDD + hexagonal boundaries + human-in-the-loop reviews.

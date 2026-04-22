@@ -18,6 +18,7 @@ Group by phase when possible. Items marked `deferred` are out of the current roa
 
 ## Tooling debt
 - [ ] [phase-0 | docs-only] Update spec text in `docs/phases/phase-00-scaffold.md` task 0.3 to reflect that `deploy-staging.yml` is a full credential-gated deploy workflow, not the placeholder echo the spec described. Low priority; no functional impact. (noted 2026-04-22)
+- [ ] [phase-0 | docs-only] Remove or create `docs/_templates/` — task 0.5 spec text references it ("see `docs/_templates/`") but the directory was never created. File headers already serve the role; either create stub template files or remove the reference from `docs/phases/phase-00-scaffold.md`. No functional impact. (noted 2026-04-22)
 - [ ] [deferred] Migrate to ESLint v9+ flat config (`eslint.config.js`). Currently on ESLint v8 with legacy `.eslintrc.cjs` because `eslint-plugin-import` compat with v9 legacy mode is unstable and v9/v10 deprecate/remove the legacy format. Acceptable tech debt; pay it after Phase 9 or whenever `eslint-plugin-import` ships a stable v9-native release. (noted 2026-04-22)
 - [ ] [deferred] Update `docs/_package-json-additions.md` to reflect that `eslint@^8` is the pinned version (not `^9`) and that `claude-mem` is task 0.6's scope (not task 0.1). The spec doc currently conflicts with the phase file on both points. (noted 2026-04-22)
 
