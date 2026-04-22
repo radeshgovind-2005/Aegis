@@ -27,7 +27,7 @@ Format per entry:
 
 **Decision:** Hexagonal with pure domain and four ports (embedding, vector-index, audit-log, cache). ESLint enforces the domain → no-Cloudflare-imports boundary. Phased roadmap with explicit human checkpoints. Append-only docs as cross-session memory.
 
-**Rationale:** Small domain + infrastructure swap-ability + interview credibility. The port boundary is what lets us demonstrate the classification logic is pure, which is the whole point of the pitch.
+**Rationale:** Small domain + infrastructure swap-ability + engineering credibility. The port boundary is what lets us demonstrate the classification logic is pure, which is the whole point of the pitch.
 
 **Consequences:** Slight overhead for Phase 2 — a few extra files for what could be inlined. Worth it because the pitch story ("the domain doesn't know what runs it") is concrete, not hand-waved.
 
