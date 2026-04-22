@@ -10,7 +10,7 @@
 
 ---
 
-## Phase 0 — Scaffold & Guardrails  ▶ IN PROGRESS
+## Phase 0 — Scaffold & Guardrails  ✔ DONE
 **Goal:** A repo where Claude Code can operate safely and a fresh session can pick up without drift. No business logic yet.
 
 - See `docs/phases/phase-00-scaffold.md`
@@ -18,7 +18,7 @@
 
 ---
 
-## Phase 1 — Dummy Origin & Reverse Proxy  ○ PENDING
+## Phase 1 — Dummy Origin & Reverse Proxy  ▶ IN PROGRESS
 **Goal:** The Worker acts as a reverse proxy in front of a tiny dummy origin. No AI yet. Prove the request-path plumbing.
 
 - See `docs/phases/phase-01-reverse-proxy.md`

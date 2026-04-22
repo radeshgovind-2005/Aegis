@@ -48,7 +48,7 @@ Work these tasks in order. One task = one branch = one PR = one human merge.
   - Tests: none.
   - Manual verify: human reads the docs cold, understands what each file is for.
 
-- [ ] **0.6 — claude-mem configuration**
+- [X] **0.6 — claude-mem configuration**
   - Add `claude-mem` as a dev dependency.
   - Add a `.claude-mem.json` config (compression policy, paths to exclude, etc.).
   - Document its usage in `CLAUDE.md` §5 (already done, confirm it's accurate).
@@ -58,12 +58,12 @@ Work these tasks in order. One task = one branch = one PR = one human merge.
 ## Exit Criteria
 
 All of:
-- [ ] Every task above is ✔ and merged into `main`.
+- [x] Every task above is ✔ and merged into `main`.
 - [ ] `npm run verify` is green on `main`.
-- [ ] CI is green on `main`.
-- [ ] Human has read `docs/manual-testing/phase-00.md` and executed it successfully.
-- [ ] Human has enabled branch protection on `main` (required status checks: `ci`).
-- [ ] Human edits `docs/ROADMAP.md` to mark Phase 0 `✔ DONE` and Phase 1 `▶ IN PROGRESS`.
+- [x] CI is green on `main`.
+- [x] Human has read `docs/manual-testing/phase-00.md` and executed it successfully.
+- [x] Human has enabled branch protection on `main` (required status checks: `ci`).
+- [x] Human edits `docs/ROADMAP.md` to mark Phase 0 `✔ DONE` and Phase 1 `▶ IN PROGRESS`.
 
 ## Human Checkpoint
 
