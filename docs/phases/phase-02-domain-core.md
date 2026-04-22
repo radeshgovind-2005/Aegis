@@ -7,10 +7,33 @@
 - Phase 1 is `✔ DONE`.
 - The reverse proxy pass-through is working.
 
+**Notes:**
+- Task 2.0 exists because Phase 0 deferred coverage wiring. See DECISIONS entry 2026-04-22 "Defer coverage instrumentation to Phase 2 via split test environments".
+
 ## Why this phase exists
 The whole point of hexagonal architecture is that the business rules don't know what infrastructure they run on. If we build this right, we can swap Vectorize for Pinecone, Workers AI for OpenAI, and the `SimilarityPolicy` doesn't change. We prove it by keeping `src/domain/` 100% free of Cloudflare imports — enforced by ESLint.
 
 ## Task List
+
+- [ ] **2.0 — Split test environments for coverage**
+
+  **Problem:** `@cloudflare/vitest-pool-workers` runs tests inside workerd, which does not implement `node:inspector.Session`. `@vitest/coverage-v8` depends on that API. The two cannot coexist in a single vitest config.
+
+  **Solution:** two configs.
+  - `vitest.config.mts` — keeps the workers pool. Used for adapter + integration tests.
+  - `vitest.unit.config.mts` — no workers pool, standard Node env. Used for `src/domain/`, `src/application/`, `src/ports/` tests.
+
+  **Tasks:**
+  - Add `vitest.unit.config.mts` (standard Node environment, no workers pool, includes `@vitest/coverage-v8`).
+  - Install `@vitest/coverage-v8` at the same major as vitest.
+  - Update `package.json` scripts:
+    - `"test:unit": "vitest run --config vitest.unit.config.mts"`
+    - `"test:workers": "vitest run"` (rename existing `test` to `test:workers`)
+    - `"test": "npm run test:unit && npm run test:workers"` (combined gate)
+    - `"test:coverage": "vitest run --config vitest.unit.config.mts --coverage"` (coverage on unit config only)
+  - Re-enable coverage in `.github/workflows/ci.yml` as a dedicated step after the test step, using `npm run test:coverage`.
+  - Tests: create a throwaway `test/domain/__smoke__/smoke.test.ts` with `expect(1).toBe(1)` to confirm the unit config runs and instruments. Delete it before opening the PR.
+  - **Rationale for doing this before 2.1:** every subsequent task writes domain tests that belong in the unit config. Splitting now avoids per-task config edits.
 
 - [ ] **2.1 — `Payload` value object**
   - `src/domain/payload/payload.ts`: immutable, constructor validates (non-empty, length ≤ 8192, is string).

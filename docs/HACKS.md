@@ -18,4 +18,10 @@ Sort newest-first. Never delete entries — when fixed, add a `**Resolved:** YYY
 
 ---
 
-_(No entries yet. Claude Code: if you take any shortcut in Phase 0, log it here before opening the PR.)_
+## 2026-04-22 — `seed` script references non-existent Phase 3 entry point
+**Where:** package.json `scripts.seed`
+**What:** `tsx scripts/seed/index.ts` is wired but `scripts/seed/index.ts` does not exist yet.
+**Why:** Spec (`docs/_package-json-additions.md`) says to add it in task 0.1. It is inert until invoked.
+**To fix:** Phase 3, task "seed corpus pipeline" — create `scripts/seed/index.ts`.
+**Priority:** low
+**Blocks phase:** 3 (not 0)
