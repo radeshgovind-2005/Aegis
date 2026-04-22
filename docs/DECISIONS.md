@@ -129,6 +129,30 @@ Format per entry:
 
 ---
 
+## 2026-04-22 — Verify task 0.3 — GitHub Actions CI deliverables confirmed
+
+**Context:** Per DECISIONS.md (2026-04-22 — Bootstrap commit pre-satisfies Phase 0 tasks 0.3–0.5), task 0.3 is verification-only — the `.github/` files pre-exist from commit `9de89c8`. This entry records the verification outcome and resolves open questions raised during orientation.
+
+**Options:** N/A — no implementation choices. One spec divergence (ci.yml step granularity) was corrected; all other files accepted as-is.
+
+**Decision:**
+- `.github/workflows/ci.yml`: replaced three separate `lint`, `typecheck`, and `test` steps with a single `npm run verify` step so CI, local dev, and Claude Code sessions all run the identical command. All other jobs (`wrangler-validate`, coverage upload gating) retained as-is.
+- `.github/workflows/deploy-staging.yml`: accepted as-is. The Phase 0 spec described a placeholder echo; the actual file is a full deploy workflow gated by credential detection. Reality is better than spec. A TODO entry tracks updating the spec text in `docs/phases/phase-00-scaffold.md` to match (low priority, no functional impact).
+- `.github/pull_request_template.md`: confirmed present and correct.
+- `.github/CODEOWNERS`: confirmed `* @radeshgovind-2005`.
+- Branch protection: confirmed enabled on `main`. Required checks: "Lint, typecheck, test" (`ci/verify` job) and "Wrangler config sanity" (`ci/wrangler-validate` job).
+- `docs/manual-testing/phase-00.md` section 0.3 pre-exists from the bootstrap commit; confirmed adequate.
+
+**Rationale:** The single-step `npm run verify` matters because it is the canonical command throughout CLAUDE.md, the phase files, and the manual-testing recipes. Running the three commands separately in CI creates a subtle divergence — a future addition to the `verify` script (e.g. `test:boundary`) would silently not run in CI. The fix is two lines and is squarely within the scope of a verification task correcting reality to match spec.
+
+**Consequences:** CI is now identical to the local `npm run verify` invocation. The spec text for `deploy-staging.yml` in `docs/phases/phase-00-scaffold.md` is mildly stale — deferred cleanup, low priority.
+
+**Clarification of checkbox-flip protocol:** An earlier entry (2026-04-22 — Bootstrap commit pre-satisfies Phase 0 tasks 0.3–0.5) stated "the checkbox will be flipped with a documentation-only commit." This was ambiguous. The governing rule, clarified here and in effect for all future tasks: Claude never edits `docs/ROADMAP.md` or any `docs/phases/phase-NN-*.md` checkbox state. The human flips checkboxes on `main` as a small docs commit after each PR merges. This entry supersedes the ambiguous line in the bootstrap entry.
+
+**Links:** commit `9de89c8`, `.github/workflows/ci.yml`, `docs/phases/phase-00-scaffold.md` task 0.3, Phase: 00 | Task: 0.3-github-actions-ci
+
+---
+
 ## 2026-04-21 — Repository scaffold and guardrails
 
 **Context:** Project start. Need a structure that lets a fresh Claude Code session pick up deterministically and enforces TDD + hexagonal boundaries + human-in-the-loop reviews.
