@@ -26,6 +26,36 @@ npm run verify
 
 ---
 
+## Dev server — Worker health check
+
+**Note:** At this point the Worker is the wrangler-init Hello World handler. No Aegis
+logic is wired yet. This recipe will be replaced in Phase 1 once the reverse proxy is
+built.
+
+**Setup:**
+```bash
+npm install  # if not already done
+```
+
+**Command:** in one terminal:
+```bash
+npm run dev
+```
+Once the server is ready, in a second terminal:
+```bash
+curl -i localhost:8787
+```
+
+**Expected output:** `npm run dev` prints wrangler startup output and ends with a line
+like `Ready on http://localhost:8787`. `curl` receives a 2xx response (typically
+`200 OK`) with a Hello World body.
+
+**What this proves:** The Worker boots under wrangler dev. The local development loop is
+functional. This is the floor — Phase 1 will replace the Hello World handler with a real
+reverse proxy.
+
+---
+
 ## 0.2 — Hexagonal boundary is enforced by tooling
 
 ### 0.2a — Automated guard (runs in CI via `npm run verify`)
