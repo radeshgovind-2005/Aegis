@@ -11,21 +11,21 @@
 
 Work these tasks in order. One task = one branch = one PR = one human merge.
 
-- [ ] **0.1 — Package scripts & tooling**
+- [x] **0.1 — Package scripts & tooling**
   - Add scripts to `package.json`: `dev`, `test`, `test:watch`, `lint`, `typecheck`, `verify`, `format`.
   - Install dev deps: `eslint`, `@typescript-eslint/*`, `prettier`, `eslint-config-prettier`.
   - Add `.eslintrc.cjs`, `.prettierrc`, `.editorconfig`.
   - Tests: none (tooling PR).
   - Manual verify: `npm run verify` exits 0.
 
-- [ ] **0.2 — Directory skeleton for hexagonal layout**
+- [x] **0.2 — Directory skeleton for hexagonal layout**
   - Create empty `src/{domain,application,ports,adapters,interfaces/http}/.gitkeep`.
   - Create empty `test/{domain,application,adapters,integration}/.gitkeep`.
   - Add `docs/adr/0001-hexagonal-architecture.md` (ADR explaining the choice — template in `docs/adr/_template.md`).
   - Tests: add a single guard test that fails if `domain/` imports from `adapters/` or `cloudflare:workers` (use `eslint-plugin-import` + `no-restricted-imports`).
   - Manual verify: introduce a forbidden import, confirm ESLint catches it, revert.
 
-- [ ] **0.3 — GitHub Actions CI**
+- [x] **0.3 — GitHub Actions CI**
   - `.github/workflows/ci.yml` — runs on every PR. Steps: checkout, setup-node 20, `npm ci`, `npm run verify`, upload coverage artefact.
   - `.github/workflows/deploy-staging.yml` — runs on push to `main`. Gated by secrets; skip gracefully if absent (for Phase 0, just `echo "staging deploy placeholder"`).
   - `.github/pull_request_template.md` — PR template (checklist: tests written first, docs updated, manual-test recipe added).
