@@ -13,7 +13,7 @@ Group by phase when possible. Items marked `deferred` are out of the current roa
 ---
 
 ## Phase 2+ candidates
-_(empty — add as discovered)_
+- [ ] [phase-2] Task 2.0 — re-install `@vitest/coverage-v8` and add `vitest.unit.config.mts` so coverage works on domain tests. Blocked until Phase 2 begins. (noted 2026-04-22)
 
 ## Tooling debt
 - [ ] [deferred] Migrate to ESLint v9+ flat config (`eslint.config.js`). Currently on ESLint v8 with legacy `.eslintrc.cjs` because `eslint-plugin-import` compat with v9 legacy mode is unstable and v9/v10 deprecate/remove the legacy format. Acceptable tech debt; pay it after Phase 9 or whenever `eslint-plugin-import` ships a stable v9-native release. (noted 2026-04-22)
