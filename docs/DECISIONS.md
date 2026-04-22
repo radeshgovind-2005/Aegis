@@ -92,6 +92,43 @@ Format per entry:
 
 ---
 
+## 2026-04-22 — Bootstrap commit pre-satisfies Phase 0 tasks 0.3–0.5
+
+**Context:** The Golden Loop requires one task = one branch = one PR = one human merge. However, the bootstrap commit `9de89c8` produced the complete deliverables for three Phase 0 tasks before the Loop was formalised: task 0.3 (CI workflows, CODEOWNERS, PR template), task 0.4 (.gitignore, .dev.vars.example, wrangler hygiene), and task 0.5 (docs/ memory files, manual-testing README). These tasks will appear in the Loop as verification-only — a DECISIONS entry noting pre-existing state, a manual verification step, and a checkbox flip. No new code is needed.
+
+**Options:**
+- Re-do each task in a separate branch, replacing identical files. *Rejected — pure ceremony, no added value, creates confusing history.*
+- Treat the bootstrap as a legitimate pre-phase scaffold and document the exception. **Chosen.**
+
+**Decision:** Tasks 0.3, 0.4, and 0.5 are considered satisfied by `9de89c8`. When the Loop reaches each, the verification step will confirm deliverables exist and the checkbox will be flipped with a documentation-only commit.
+
+**Rationale:** The deliverables exist and are correct. The spirit of the Golden Loop — making sure each task is intentional and verifiable — is satisfied by this entry. Re-doing the work would only muddy the git history.
+
+**Consequences:** Three tasks will have no code diff, only a documentation commit. The phase file checkboxes still require separate flips so CI history is traceable.
+
+**Links:** commit 9de89c8, docs/phases/phase-00-scaffold.md tasks 0.3–0.5, Phase: 00 | Task: 0.2-directory-skeleton
+
+---
+
+## 2026-04-22 — Boundary guard as tsx script, not vitest test
+
+**Context:** Task 0.2 calls for a guard test proving that the `no-restricted-imports` ESLint rule catches forbidden domain imports. The obvious implementation is a vitest test using ESLint's Node API. However, `vitest.config.mts` uses `@cloudflare/vitest-pool-workers`, which runs all tests inside Miniflare/workerd — an environment where ESLint's complex Node.js dependency tree cannot run. Introducing a second vitest config to support a Node pool was deferred to Phase 2, task 2.0, per DECISIONS.md (2026-04-22 — Defer coverage instrumentation).
+
+**Options:**
+- Pre-empt task 2.0: add a `vitest.node.config.mts` now. *Rejected — scope creep; task 2.0 owns this.*
+- Vitest test using ESLint API: blocked by Workers pool constraint. *Rejected — technically infeasible without the split.*
+- tsx script run by `npm run test:boundary`, included in `npm run verify`. **Chosen.**
+
+**Decision:** `test/domain/boundary.guard.ts` is a plain TypeScript script executed by `tsx` (already installed). It loads the project's `.eslintrc.cjs`, lints an inline import string against a virtual `src/domain/` filepath, and exits non-zero if the violation is not reported. Added `test:boundary` to package.json scripts and appended it to `verify`.
+
+**Rationale:** This is regression coverage for the boundary rule, not a TDD cycle — the rule pre-existed from task 0.1. The tsx script runs in Node.js proper, avoiding the Workers pool issue entirely. The inline-text + virtual-filepath approach (`eslint.lintText`) removes any need to exclude fixture files from the CLI, tsconfig, or vitest. The script is part of `verify`, so CI catches regressions automatically.
+
+**Consequences:** The guard is not a vitest test (no vitest reporter integration, no coverage tracking). This is intentional for Phase 0. When task 2.0 introduces the unit config, the guard could be converted to a vitest test if desired — tracked in TODO.md.
+
+**Links:** test/domain/boundary.guard.ts, package.json scripts.test:boundary, Phase: 00 | Task: 0.2-directory-skeleton
+
+---
+
 ## 2026-04-21 — Repository scaffold and guardrails
 
 **Context:** Project start. Need a structure that lets a fresh Claude Code session pick up deterministically and enforces TDD + hexagonal boundaries + human-in-the-loop reviews.
