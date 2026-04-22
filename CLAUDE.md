@@ -102,9 +102,11 @@ You have no memory between sessions. These files ARE your memory. Keep them curr
 
 ---
 
-## 5. Memory Compression (claude-mem)
+## 5. Cross-Session Memory
 
-The repo is configured to use [`claude-mem`](https://github.com/thedotmack/claude-mem) for compressing long conversation histories. Use it when your context is filling up. The markdown logs in `docs/` are still the source of truth — claude-mem compresses conversations, not decisions.
+The cross-session memory system is the append-only markdown logs in `docs/` (see §4). `DECISIONS.md`, `HACKS.md`, `TODO.md`, `ISSUES.md`, and the `docs/manual-testing/` recipes carry all context a fresh session needs. The orientation drill in §12 is how to load it.
+
+[`claude-mem`](https://github.com/thedotmack/claude-mem) is an optional user-level tool individual operators can install on their own machine for in-session transcript compression. It is **not** part of this repo's configuration, `npm install`, CI, or onboarding. Do not assume it is available.
 
 ---
 
