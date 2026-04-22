@@ -34,7 +34,7 @@ Work these tasks in order. One task = one branch = one PR = one human merge.
   - Tests: none — CI itself is the test.
   - Manual verify: open a throwaway PR with a deliberate lint error, confirm CI fails.
 
-- [ ] **0.4 — .gitignore, .dev.vars.example, wrangler hygiene**
+- [x] **0.4 — .gitignore, .dev.vars.example, wrangler hygiene**
   - Expand `.gitignore`: `.dev.vars`, `.wrangler/`, `coverage/`, `.DS_Store`, `*.log`.
   - Create `.dev.vars.example` with placeholders for any secrets future phases will need (empty for now).
   - Verify `wrangler.jsonc` has `name = "aegis"` and no leaked account ID.
