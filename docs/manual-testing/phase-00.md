@@ -26,13 +26,33 @@ npm run verify
 
 ---
 
-## 0.2 — ESLint guard rejects a forbidden import
+## 0.2 — Hexagonal boundary is enforced by tooling
+
+### 0.2a — Automated guard (runs in CI via `npm run verify`)
+
+**Command:**
+```bash
+npm run test:boundary
+```
+
+**Expected output:**
+```
+PASS: hexagonal boundary rule flagged 1 violation(s) correctly.
+```
+Exit code 0.
+
+**What this proves:** The `no-restricted-imports` rule in `.eslintrc.cjs` is correctly wired. If this fails, the boundary rule has been removed or misconfigured.
+
+---
+
+### 0.2b — Manual lint rejection of a forbidden domain import
 
 **Setup:** be on a scratch branch.
 
-**Command:** Open `src/domain/payload/payload.ts` (once Phase 2 creates it — for Phase 0, create a throwaway file at that path) and add:
+**Command:** Create a throwaway file at `src/domain/bad.ts` containing:
 ```ts
-import { Ai } from '@cloudflare/workers-types';
+import type { Env } from 'cloudflare:workers';
+export type _T = Env;
 ```
 Then run:
 ```bash
@@ -41,7 +61,9 @@ npm run lint
 
 **Expected output:** ESLint errors with `no-restricted-imports` citing the domain → Cloudflare boundary. Exit code non-zero.
 
-**What this proves:** The hexagonal boundary is enforced by tooling, not just convention. Remove the import before committing.
+**What this proves:** The hexagonal boundary is enforced by tooling, not just convention.
+
+**Cleanup:** delete `src/domain/bad.ts` and return to `main`.
 
 ---
 
