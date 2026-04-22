@@ -41,7 +41,7 @@ Work these tasks in order. One task = one branch = one PR = one human merge.
   - Tests: none.
   - Manual verify: `git status` shows no untracked files after a fresh checkout + `npm install`.
 
-- [ ] **0.5 — Seed the docs/ memory files**
+- [x] **0.5 — Seed the docs/ memory files**
   - Create `docs/DECISIONS.md`, `docs/HACKS.md`, `docs/TODO.md`, `docs/ISSUES.md`, `docs/ROADMAP_CHANGES.md` with their headers (see `docs/_templates/`).
   - Create `docs/manual-testing/README.md` explaining the structure.
   - Create `docs/manual-testing/phase-00.md` with a step-by-step recipe for the human to verify Phase 0 (run `npm install`, `npm run verify`, `npm run dev`, hit `localhost:8787`).
