@@ -153,6 +153,25 @@ Format per entry:
 
 ---
 
+## 2026-04-22 — Verify task 0.4 — .gitignore, .dev.vars.example, wrangler hygiene confirmed
+
+**Context:** Per DECISIONS.md (2026-04-22 — Bootstrap commit pre-satisfies Phase 0 tasks 0.3–0.5), task 0.4 is verification-only — `.gitignore`, `.dev.vars.example`, and `wrangler.jsonc` pre-exist from commit `9de89c8`. This entry records the verification outcome.
+
+**Options:** N/A — no implementation choices. All three files accepted as-is. No spec divergences requiring correction.
+
+**Decision:**
+- `.gitignore`: confirmed present. All patterns required by task 0.4 spec are covered: `.dev.vars` (plus `.dev.vars.*` with `!.dev.vars.example` negation), `.wrangler/`, `coverage/`, `.DS_Store`, `*.log`. Bootstrap additionally pre-added `.seed-cache/` (Phase 3+) and `.claude-mem/` (task 0.6). No gaps.
+- `.dev.vars.example`: confirmed present. Contains three annotated empty-string placeholders: `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` (Phase 3+), and `DEV_TOKEN` (Phase 5+). All values are empty strings — zero real secrets. Reality exceeds the spec's "empty for now" description, which is the same reality-better-than-spec pattern observed in task 0.3 for `deploy-staging.yml`. No TODO entry needed; the gap is additive, not problematic.
+- `wrangler.jsonc`: confirmed present. `"name": "aegis"` is set. No `account_id` field. No secrets anywhere in the file. Valid JSONC.
+
+**Rationale:** All deliverables satisfy the acceptance criteria. No changes were required. The verification-only pattern established for task 0.3 applies here identically — the bootstrap commit was a legitimate pre-phase scaffold and the files it produced are correct.
+
+**Consequences:** No file changes in this task. The `.dev.vars.example` exceeding the spec is additive value, not a compliance issue. The spec text ("empty for now") is mildly stale but self-evidently superseded by the actual file; no TODO needed.
+
+**Links:** commit `9de89c8`, `.gitignore`, `.dev.vars.example`, `wrangler.jsonc`, `docs/phases/phase-00-scaffold.md` task 0.4, Phase: 00 | Task: 0.4-gitignore-wrangler-hygiene
+
+---
+
 ## 2026-04-21 — Repository scaffold and guardrails
 
 **Context:** Project start. Need a structure that lets a fresh Claude Code session pick up deterministically and enforces TDD + hexagonal boundaries + human-in-the-loop reviews.
