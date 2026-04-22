@@ -172,6 +172,25 @@ Format per entry:
 
 ---
 
+## 2026-04-22 — Reclassify claude-mem as optional operator tool; close task 0.6 as docs-only
+
+**Context:** Task 0.6 spec called for adding `claude-mem` as a devDependency and adding a `.claude-mem.json` config (compression policy, paths to exclude). On inspection of the installed package (v12.3.8), neither approach is valid. The tool's own README warns: "npm install installs the SDK/library only — it does not register the plugin hooks or set up the worker service." Configuration lives at `~/.claude-mem/settings.json` (user-global, auto-created on first run); there is no per-project `.claude-mem.json` format. Runtime requires Bun, a SQLite database, and a Chroma vector database — user-level infrastructure that cannot be installed via `npm ci` and cannot run in CI. The spec was drafted against an earlier version of the tool (README badges v6.5.0; the installed package is v12.3.8); the tool has grown into a full persistent-memory service since then. A devDependency install would also violate the "fresh clone + `npm install` is complete onboarding" principle the scaffold is built around: CI cannot run `npx claude-mem install`, and a fresh session on a new machine cannot assume the user-level service is running. The old §5 text ("the repo is configured to use claude-mem") was a spec-era category error — it conflated a user-level tool with a repo-level dependency.
+
+**Options:**
+- A: Redefine as user-level install (`npx claude-mem install --ide claude-code` run out-of-band). *Rejected — breaks the fresh-clone onboarding contract; CI cannot execute the install; fresh sessions cannot assume the service is running.*
+- B: Remove claude-mem from the repo's scope. Rewrite `CLAUDE.md §5` to describe the actual memory system (append-only docs/ logs), mention claude-mem once as an optional operator tool. **Chosen.**
+- C: Install as devDependency and create a stub `.claude-mem.json` the tool does not read. *Rejected — spec-compliance theater; the tool would not function.*
+
+**Decision:** claude-mem is reclassified as an optional user-level tool. It is not a devDependency, has no config file in the repo, and plays no role in CI or onboarding. `CLAUDE.md §5` is rewritten to describe the actual cross-session memory system: the append-only docs/ logs (`DECISIONS.md`, `HACKS.md`, `TODO.md`, `ISSUES.md`, `manual-testing/`) and the §12 orientation drill. That system has carried the project through six PRs without drift and is sufficient.
+
+**Rationale:** The docs/ log system is the real memory mechanism. It is repo-native, works in every environment (CI, fresh clone, new machine), and is already in place. claude-mem is a useful supplement for operators who want in-session transcript compression on their own machine, but it cannot be required or verified by the project.
+
+**Consequences:** The task 0.6 manual-verify criterion ("npx claude-mem --help works") no longer applies. Verification for task 0.6 is instead: `CLAUDE.md §5` accurately describes the memory strategy, and that strategy (the docs/ logs) already exists and is working. The spec text in `docs/phases/phase-00-scaffold.md` task 0.6 is now outdated; a TODO entry tracks updating it after Phase 0 closes (low priority, docs-only).
+
+**Links:** `CLAUDE.md §5`, `docs/TODO.md`, `docs/phases/phase-00-scaffold.md` task 0.6, Phase: 00 | Task: 0.6-claude-mem
+
+---
+
 ## 2026-04-22 — Verify task 0.5 — docs/ memory files confirmed, dev-server recipe added
 
 **Context:** Per DECISIONS.md (2026-04-22 — Bootstrap commit pre-satisfies Phase 0 tasks 0.3–0.5), task 0.5 is verification-only — the docs/ memory files and manual-testing/ directory pre-exist from commit `9de89c8`. This entry records the verification outcome.
