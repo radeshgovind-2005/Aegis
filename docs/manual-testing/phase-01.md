@@ -76,86 +76,124 @@ curl -sI http://localhost:8787/health | grep -i content-type
 
 ## Task 1.3 — HTTP Handler: Pass-Through Mode
 
-**Prerequisites:** Both Workers running simultaneously — two terminals.
-
-### 1. Start the dummy origin (terminal 1)
-
-```bash
-cd workers/dummy-origin
-npm run dev
-# Wrangler starts on http://localhost:8787 (or next free port)
-# Note the port — you may need to configure dummy-origin's port explicitly
-# if 8787 is taken. For now use the default.
-```
-
-### 2. Start the Aegis Worker (terminal 2)
-
-```bash
-# From repo root
-npm run dev
-# Wrangler starts on http://localhost:8787 (if dummy-origin is on 8787,
-# Aegis will take 8788 or vice versa — check each terminal's output).
-# IMPORTANT: wrangler dev resolves service bindings to the locally running
-# dummy-origin Worker automatically when both are started with wrangler dev.
-```
-
-### 3. Send requests through the Aegis proxy
-
-Replace `<AEGIS_PORT>` with the port Aegis is listening on.
-
-```bash
-# GET /health — forwarded to origin, returns {"status":"ok"}
-curl -s http://localhost:<AEGIS_PORT>/health | jq .
-# Expected: {"status":"ok"}
-
-# GET /echo?q=hello — forwarded, returns {"echo":"hello"}
-curl -s "http://localhost:<AEGIS_PORT>/echo?q=hello" | jq .
-# Expected: {"echo":"hello"}
-
-# POST /search — forwarded with JSON body
-curl -s -X POST http://localhost:<AEGIS_PORT>/search \
-  -H "Content-Type: application/json" \
-  -d '{"query":"sql injection"}' | jq .
-# Expected: {"query":"sql injection","results":[]}
-
-# Unknown route — origin 404 forwarded unchanged
-curl -s -o /dev/null -w "%{http_code}" http://localhost:<AEGIS_PORT>/unknown
-# Expected: 404
-```
-
-### 4. Inspect the log output
-
-In the **Aegis terminal** (terminal 2) you should see a JSON log line for each
-request, e.g.:
-
-```json
-{"ts":"2026-04-23T12:34:38.104Z","reqId":"f1bf25e7-...","method":"GET","path":"/echo","verdict":"ALLOW","latencyMs":6}
-```
-
-Confirm all six fields are present: `ts`, `reqId`, `method`, `path`,
-`verdict` (always `"ALLOW"` for now), `latencyMs` (non-negative integer).
-
-### 5. Automated check
-
-```bash
-# From repo root — must exit 0
-npm run verify
-# Expected: lint clean, typecheck clean, 24 tests passed (19 payload + 5 handler).
-```
+See the **Phase 1 End-to-End Recipe** (Task 1.5 section below) for the
+complete two-Worker setup. Tasks 1.3 and 1.4 use the same setup.
 
 ---
 
 ## Task 1.4 — Structured Logging
 
-Task 1.4 introduces `src/interfaces/http/logger.ts`. The log output format is
-unchanged from task 1.3 — this task replaces the inline placeholder with a
-tested, named function. No new manual steps are required; the task 1.3 recipe
-above covers end-to-end verification.
+Log format and setup are identical to Task 1.3. See the Phase 1 End-to-End
+Recipe (Task 1.5 section below).
 
-### Automated check
+---
+
+## Task 1.5 — Phase 1 End-to-End Recipe
+
+This is the definitive recipe for verifying the full Phase 1 proxy stack.
+Run it after all tasks (1.1–1.5) have merged.
+
+### Prerequisites
+
+- `node` ≥ 20, `npm`, and `wrangler` installed globally (or use `npx wrangler`)
+- `jq` installed (for readable JSON output)
+- Two terminal windows available
+
+### Step 1 — Install all dependencies
+
+```bash
+# From repo root
+npm ci
+
+# Install dummy-origin deps (included in npm run verify but good to be explicit)
+cd workers/dummy-origin && npm ci && cd ../..
+```
+
+### Step 2 — Verify the automated test suite
 
 ```bash
 npm run verify
-# Expected: lint clean, typecheck clean, 30 tests passed
-# (19 payload-extractor + 5 waf-handler + 6 logger).
+# Expected: exits 0
+# Lint: clean
+# Typecheck: clean
+# Tests: 30 passed (19 payload-extractor + 5 waf-handler + 6 logger)
+# Boundary guard: 1 violation flagged correctly
+# Dummy-origin tests: 6 passed
 ```
+
+### Step 3 — Start the dummy origin (terminal 1)
+
+```bash
+# Port 8788: leaves 8787 free for Aegis
+npm run dev:dummy-origin
+```
+
+Wait for the line: `Ready on http://localhost:8788`
+
+### Step 4 — Start the Aegis Worker (terminal 2)
+
+```bash
+# From repo root — port 8787 (default)
+npm run dev
+```
+
+Wait for the line: `Ready on http://localhost:8787`
+
+> **How service bindings work locally:** wrangler dev maintains a local
+> Worker registry. When Aegis calls `env.ORIGIN.fetch(...)`, wrangler
+> routes it to the locally running "dummy-origin" Worker automatically —
+> no manual URL wiring required.
+
+### Step 5 — Smoke-test the proxy
+
+Run these in a third terminal (or any shell where the two Workers are already running):
+
+```bash
+# Phase exit criterion: echo hello through the proxy
+curl -s "http://localhost:8787/echo?q=hello" | jq .
+# Expected: {"echo":"hello"}
+
+# Health check forwarded
+curl -s http://localhost:8787/health | jq .
+# Expected: {"status":"ok"}
+
+# POST with JSON body forwarded
+curl -s -X POST http://localhost:8787/search \
+  -H "Content-Type: application/json" \
+  -d '{"query":"sql injection"}' | jq .
+# Expected: {"query":"sql injection","results":[]}
+
+# Unknown route — origin 404 forwarded unchanged
+curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8787/unknown
+# Expected: 404
+```
+
+### Step 6 — Inspect the structured log
+
+Switch to the **Aegis terminal** (terminal 2). After each curl you should see
+a JSON line like:
+
+```json
+{
+  "ts":        "2026-04-23T12:34:38.104Z",
+  "reqId":     "f1bf25e7-a1cb-417a-9c51-5f3c6091ee46",
+  "method":    "GET",
+  "path":      "/echo",
+  "verdict":   "ALLOW",
+  "latencyMs": 6
+}
+```
+
+Confirm:
+- `ts` is a valid ISO 8601 timestamp
+- `reqId` is a UUID (different for every request)
+- `method` and `path` match what you sent
+- `verdict` is `"ALLOW"` (no classifier yet)
+- `latencyMs` is a non-negative integer
+
+### Phase 1 exit criteria checklist
+
+- [ ] `npm run verify` exits 0
+- [ ] `curl localhost:8787/echo?q=hello` returns `{"echo":"hello"}`
+- [ ] Aegis terminal shows a log line with `"verdict":"ALLOW"`
+- [ ] `latencyMs` is present and numeric in every log line
