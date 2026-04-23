@@ -1,4 +1,5 @@
 import { extractPayload } from "../../domain/payload/payload-extractor";
+import { logRequest } from "./logger";
 
 export default {
   async fetch(request: Request, env: Env, _ctx: ExecutionContext): Promise<Response> {
@@ -19,18 +20,13 @@ export default {
 
     const response = await env.ORIGIN.fetch(request);
 
-    // TODO(task-1.4): replace with the structured logger — see docs/HACKS.md
-    // eslint-disable-next-line no-console
-    console.log(
-      JSON.stringify({
-        ts: new Date().toISOString(),
-        reqId,
-        method: extracted.method,
-        path: extracted.path,
-        verdict: "ALLOW",
-        latencyMs: Date.now() - t0,
-      }),
-    );
+    logRequest({
+      reqId,
+      method: extracted.method,
+      path: extracted.path,
+      verdict: "ALLOW",
+      latencyMs: Date.now() - t0,
+    });
 
     return response;
   },
