@@ -27,7 +27,7 @@ Before adding inference on the hot path, we need rock-solid plumbing: request pa
   - Default verdict: `ALLOW` (we have no classifier yet).
   - Tests: integration tests via `@cloudflare/vitest-pool-workers` + `SELF.fetch()`.
 
-- [ ] **1.4 — Structured logging**
+- [x] **1.4 — Structured logging**
   - A tiny logger that emits JSON to `console.log`. Fields: `ts`, `reqId`, `method`, `path`, `verdict`, `latencyMs`.
   - Tests: unit tests on the logger.
 
