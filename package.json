@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "wrangler dev",
+    "dev:dummy-origin": "wrangler dev --config workers/dummy-origin/wrangler.jsonc --port 8788",
     "deploy": "echo 'Refusing: use GitHub Actions workflow_dispatch for production deploys.' && exit 1",
     "test": "vitest run",
     "test:watch": "vitest",
