@@ -13,7 +13,8 @@
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
     "test:boundary": "tsx test/domain/boundary.guard.ts",
-    "verify": "npm run lint && npm run typecheck && npm run test && npm run test:boundary",
+    "test:dummy-origin": "cd workers/dummy-origin && npm ci && npm run typecheck && npm run test",
+    "verify": "npm run lint && npm run typecheck && npm run test && npm run test:boundary && npm run test:dummy-origin",
     "cf-typegen": "wrangler types",
     "seed": "tsx scripts/seed/index.ts"
   },
