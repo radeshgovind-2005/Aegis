@@ -13,6 +13,8 @@ Group by phase when possible. Items marked `deferred` are out of the current roa
 ---
 
 ## Phase 1 candidates
+- [ ] [phase-2] Revisit `query: Record<string,string>` in `ExtractedPayload` — last-write-wins for duplicate keys matches the phase spec but loses data. If Phase 2's `Payload` VO needs multi-value params, reshape to `Record<string,string[]>`. (noted 2026-04-23)
+- [ ] [phase-4] Revisit missing `Content-Type` handling in `extractPayload` — currently treated as binary → `body: null`. When real attack data is available, check whether attacker tools deliberately omit the header as an evasion tactic; may need a fallback heuristic. (noted 2026-04-23)
 - [ ] [phase-1/task-1.3] Root `vitest.config.mts` will need a `miniflare.workers` entry declaring the dummy origin as an auxiliary Worker so the Aegis integration tests can use it as a service binding target (`env.ORIGIN`). Do not add this now — it belongs to task 1.3. (noted 2026-04-23)
 - [ ] [phase-1/task-1.3] Add a `dev:dummy-origin` (or `dev:all`) convenience script to run both Workers simultaneously during local development. Not needed until task 1.3 wires the proxy. (noted 2026-04-23)
 
