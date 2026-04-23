@@ -18,13 +18,14 @@ Sort newest-first. Never delete entries — when fixed, add a `**Resolved:** YYY
 
 ---
 
-## 2026-04-23 — console.log placeholder for structured logger
-**Where:** `src/interfaces/http/waf-handler.ts:24`
-**What:** `console.log(JSON.stringify({...}))` inline in the handler instead of the real structured logger.
-**Why:** Task 1.4 owns the structured logger. Adding a named stub would create a file task 1.4 deletes entirely.
-**To fix:** Task 1.4 — implement the logger, replace the `console.log` call with `logger.log(...)`, remove the `eslint-disable` comment.
-**Priority:** low
-**Blocks phase:** nothing (task 1.4 is next)
+## ~~2026-04-23 — console.log placeholder for structured logger~~
+~~**Where:** `src/interfaces/http/waf-handler.ts:24`~~
+~~**What:** `console.log(JSON.stringify({...}))` inline in the handler instead of the real structured logger.~~
+~~**Why:** Task 1.4 owns the structured logger. Adding a named stub would create a file task 1.4 deletes entirely.~~
+~~**To fix:** Task 1.4 — implement the logger, replace the `console.log` call with `logger.log(...)`, remove the `eslint-disable` comment.~~
+~~**Priority:** low~~
+~~**Blocks phase:** nothing (task 1.4 is next)~~
+**Resolved:** 2026-04-23, feat(http): implement logRequest and wire into waf-handler
 
 ---
 

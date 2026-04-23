@@ -142,3 +142,20 @@ Confirm all six fields are present: `ts`, `reqId`, `method`, `path`,
 npm run verify
 # Expected: lint clean, typecheck clean, 24 tests passed (19 payload + 5 handler).
 ```
+
+---
+
+## Task 1.4 — Structured Logging
+
+Task 1.4 introduces `src/interfaces/http/logger.ts`. The log output format is
+unchanged from task 1.3 — this task replaces the inline placeholder with a
+tested, named function. No new manual steps are required; the task 1.3 recipe
+above covers end-to-end verification.
+
+### Automated check
+
+```bash
+npm run verify
+# Expected: lint clean, typecheck clean, 30 tests passed
+# (19 payload-extractor + 5 waf-handler + 6 logger).
+```
