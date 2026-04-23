@@ -22,7 +22,7 @@ Before adding inference on the hot path, we need rock-solid plumbing: request pa
   - Tests: unit tests covering GET with query, POST with JSON, POST with form-encoded, binary bodies (return null), oversize bodies (truncate + flag).
   - **Important:** This is still pure TS. No Worker types here — accept a plain `URL` + headers + body reader.
 
-- [ ] **1.3 — HTTP handler: pass-through mode**
+- [x] **1.3 — HTTP handler: pass-through mode**
   - `src/interfaces/http/waf-handler.ts` — implements `fetch`. Uses `PayloadExtractor` then forwards to `env.ORIGIN` (a Service binding).
   - Default verdict: `ALLOW` (we have no classifier yet).
   - Tests: integration tests via `@cloudflare/vitest-pool-workers` + `SELF.fetch()`.
