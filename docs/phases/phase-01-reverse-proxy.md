@@ -1,6 +1,6 @@
 # Phase 1 — Dummy Origin & Reverse Proxy
 
-**Status:** ○ PENDING
+**Status:** ▶ IN PROGRESS
 **Goal:** Prove the request-path plumbing. Worker sits in front of a tiny dummy origin and forwards requests. No AI yet.
 
 ## Entry Criteria

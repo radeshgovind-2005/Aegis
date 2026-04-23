@@ -1,6 +1,6 @@
 # Phase 0 — Scaffold & Guardrails
 
-**Status:** ▶ IN PROGRESS
+**Status:** ✔ DONE
 **Goal:** A repo where Claude Code can operate safely and a fresh session can pick up without drift.
 
 ## Entry Criteria
