@@ -12,7 +12,7 @@ Before adding inference on the hot path, we need rock-solid plumbing: request pa
 
 ## Task List
 
-- [ ] **1.1 — Dummy origin Worker**
+- [x] **1.1 — Dummy origin Worker**
   - A second Worker (`workers/dummy-origin/`) with 3 endpoints: `GET /echo?q=...`, `POST /search` (JSON body), `GET /health`.
   - Deployed separately (or same repo, separate wrangler config).
   - Tests: contract tests for each endpoint.
