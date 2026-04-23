@@ -283,6 +283,63 @@ Format per entry:
 
 ---
 
+## 2026-04-23 — waf-handler: inline JS duplicate for Miniflare aux Worker
+
+**Context:** Task 1.3 integration tests need `env.ORIGIN` to resolve to the dummy-origin Worker at test time. `@cloudflare/vitest-pool-workers` exposes `poolOptions.workers.miniflare.workers: WorkerOptions[]` (from Miniflare) to declare auxiliary Workers. Miniflare requires JavaScript source (via `script` or `scriptPath`) — it does not compile TypeScript. The dummy-origin's canonical source is `workers/dummy-origin/src/index.ts`.
+
+**Options:**
+- *(a) Inline JS `script` string in vitest.config.mts* — duplicates dummy-origin logic (~30 lines of JS). Simple, no build step. **Chosen.**
+- *(b) `scriptPath` pointing to compiled output* — requires a `wrangler build` step before tests run. Adds CI complexity and a build artifact to track. Rejected for now.
+- *(c) `miniflare.serviceBindings.ORIGIN` function* — intercepts the binding with an inline function rather than a real Worker. Simpler but not a true Worker-to-Worker integration test. Rejected: the TODO note explicitly specified `miniflare.workers`.
+
+**Decision:** Inline JS `script` in `DUMMY_ORIGIN_SCRIPT` constant at the top of `vitest.config.mts`. The constant is annotated with the reason and a pointer to HACKS.md.
+
+**Rationale:** The dummy-origin logic is small and stable; duplication risk is low. The inline approach requires no build tooling changes and keeps the test config self-contained. When the project matures and a proper build pipeline exists for `workers/`, option (b) is the right migration.
+
+**Consequences:** If the dummy-origin TypeScript is changed, `DUMMY_ORIGIN_SCRIPT` must be updated in sync. This is an explicit trade-off; the HACKS entry and the constant annotation make it discoverable.
+
+**Links:** `vitest.config.mts`, `docs/HACKS.md`, Phase: 01 | Task: 1.3-http-handler-passthrough
+
+---
+
+## 2026-04-23 — waf-handler: request.clone() before extractPayload; forward original
+
+**Context:** `waf-handler.ts` must both (a) call `extractPayload` (which reads the body stream for the log fields) and (b) forward the original request body to `env.ORIGIN`. A `ReadableStream` can only be consumed once; reading it for extraction would leave the body empty for the origin.
+
+**Options:**
+- Clone the request first (`const clone = request.clone()`), extract from the clone, forward the original. **Chosen.**
+- Extract first, then reconstruct a new `Request` with the same body from the extracted string. Lossy — binary bodies yield `body: null` in `ExtractedPayload`, so reconstruction is not possible in general.
+- Skip extraction entirely for the forwarding path, run extraction in a `ctx.waitUntil()` after responding. Changes observable semantics (log emitted after response) and complicates the log spy test. Rejected.
+
+**Decision:** `request.clone()` is the first statement in `fetch()`, before any other access to the request. A comment in the code explains the ordering constraint.
+
+**Rationale:** `Request.clone()` is the Web Platform primitive for this exact pattern. The clone gets a new independent body stream; the original is untouched. The ordering comment prevents a future refactor from accidentally reordering the clone call after a body read.
+
+**Consequences:** Two body streams are created per request. Memory cost is proportional to body size, bounded by `MAX_BODY_BYTES` (8 KB). Acceptable for the WAF use case.
+
+**Links:** `src/interfaces/http/waf-handler.ts`, Phase: 01 | Task: 1.3-http-handler-passthrough
+
+---
+
+## 2026-04-23 — waf-handler: console.log placeholder for task 1.4 logger
+
+**Context:** The phase exit criteria requires a log line per request with fields `ts`, `reqId`, `method`, `path`, `verdict`, `latencyMs`. Task 1.4 owns the structured logger. For task 1.3, the handler needs some logging to satisfy the exit criteria and the unit test.
+
+**Options:**
+- Inline `console.log(JSON.stringify({...}))` with the exact field names task 1.4 will use. **Chosen.**
+- A named stub function `logRequest(...)` in a separate file. Task 1.4 would delete the file entirely. Adds a file and import for code with a two-task lifetime.
+- Skip logging in task 1.3; add it only in task 1.4. Violates the exit criteria ("structured log line showing `verdict=ALLOW`").
+
+**Decision:** Inline `console.log`. Field names locked to the task 1.4 spec (`ts`, `reqId`, `method`, `path`, `verdict`, `latencyMs`) so task 1.4 is a drop-in swap at the call site, not a rename. The `eslint-disable-next-line no-console` comment and a TODO marker make the placeholder discoverable. Logged in HACKS.md.
+
+**Rationale:** Minimum code for a two-task lifetime. A named stub imposes structure on infrastructure that will be replaced wholesale.
+
+**Consequences:** `eslint-disable-next-line no-console` suppresses the `no-console` warning. The suppression is intentional and self-documenting via the adjacent TODO comment.
+
+**Links:** `src/interfaces/http/waf-handler.ts:23`, `docs/HACKS.md`, Phase: 01 | Task: 1.3-http-handler-passthrough
+
+---
+
 ## 2026-04-21 — Repository scaffold and guardrails
 
 **Context:** Project start. Need a structure that lets a fresh Claude Code session pick up deterministically and enforces TDD + hexagonal boundaries + human-in-the-loop reviews.
