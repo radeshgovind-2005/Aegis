@@ -12,6 +12,10 @@ Group by phase when possible. Items marked `deferred` are out of the current roa
 
 ---
 
+## Phase 1 candidates
+- [ ] [phase-1/task-1.3] Root `vitest.config.mts` will need a `miniflare.workers` entry declaring the dummy origin as an auxiliary Worker so the Aegis integration tests can use it as a service binding target (`env.ORIGIN`). Do not add this now — it belongs to task 1.3. (noted 2026-04-23)
+- [ ] [phase-1/task-1.3] Add a `dev:dummy-origin` (or `dev:all`) convenience script to run both Workers simultaneously during local development. Not needed until task 1.3 wires the proxy. (noted 2026-04-23)
+
 ## Phase 2+ candidates
 - [ ] [phase-2] Task 2.0 — re-install `@vitest/coverage-v8` and add `vitest.unit.config.mts` so coverage works on domain tests. Blocked until Phase 2 begins. (noted 2026-04-22)
 - [ ] [phase-2] After task 2.0 adds the Node vitest pool, consider converting `test/domain/boundary.guard.ts` from a tsx script to a proper vitest test. Not required — the current script runs in CI via `test:boundary` — but a vitest test would get coverage tracking and runner integration. (noted 2026-04-22)
