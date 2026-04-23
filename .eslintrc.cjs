@@ -37,6 +37,7 @@ module.exports = {
     'coverage/',
     '**/*.d.ts',
     'worker-configuration.d.ts',
+    'workers/',
   ],
   rules: {
     '@typescript-eslint/no-unused-vars': [

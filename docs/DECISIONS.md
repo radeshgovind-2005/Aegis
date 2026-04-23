@@ -216,6 +216,43 @@ Format per entry:
 
 ---
 
+## 2026-04-23 — dummy-origin: fully isolated Worker project (option a over b/c)
+
+**Context:** Task 1.1 requires a dummy origin Worker with three endpoints used as a local test fixture. The task spec mentions "deployed separately (or same repo, separate wrangler config)" but does not prescribe the npm project structure. Three options were evaluated: (a) fully isolated — own package.json, node_modules, wrangler.jsonc; (b) npm workspace — shared root node_modules, separate wrangler.jsonc; (c) single wrangler.jsonc with multiple Worker entries.
+
+**Options:**
+- **(a) Fully isolated** — `workers/dummy-origin/` is its own npm project. Two `npm install` invocations. Root gains a `test:dummy-origin` script (`cd workers/dummy-origin && npm ci && npm run typecheck && npm run test`) appended to `verify`.
+- **(b) npm workspace** — shared root `node_modules`, hoisted devDeps, separate `wrangler.jsonc`. One install, but introduces workspace hoisting rules, potential phantom-dep issues, and unclear CI semantics with `@cloudflare/vitest-pool-workers`.
+- **(c) Single wrangler.jsonc multi-worker** — non-standard, limited `@cloudflare/vitest-pool-workers` support, harder to deploy independently.
+
+**Decision:** Option (a). Fully isolated.
+
+**Rationale:** The dummy origin is test infrastructure — it is outside the Aegis hexagon and should not be structurally coupled to the Aegis npm project. npm workspaces add permanent complexity (hoisting rules, phantom deps, workspace-aware CI steps) for a throwaway fixture. The architectural signal of a separate `package.json` is correct: "this is not Aegis." Two `npm install` invocations is the right tradeoff.
+
+**Consequences:** Root `verify` takes slightly longer (npm ci inside dummy-origin on every run). Root `vitest.config.mts` must explicitly exclude `workers/**` to prevent the Aegis test runner from picking up dummy-origin tests and running them against the wrong SELF. Root `.eslintrc.cjs` must add `workers/` to `ignorePatterns` to prevent the TypeScript parser from failing on files outside `tsconfig.eslint.json`. These are one-time additions, not ongoing maintenance.
+
+**Links:** `workers/dummy-origin/`, `package.json` scripts.test:dummy-origin, Phase: 01 | Task: 1.1-dummy-origin
+
+---
+
+## 2026-04-23 — scopeless commits for workers/ (no scope taxonomy for test fixtures)
+
+**Context:** CLAUDE.md §6 defines a fixed scope list for Conventional Commits: `{domain, app, adapter-ai, adapter-vector, adapter-d1, adapter-kv, http, ci, docs, seed}`. The dummy origin Worker does not map to any of these. Adding a `workers` scope would imply the scope list covers things outside the Aegis hexagon, which contradicts the intent of the list.
+
+**Options:**
+- Add `workers` to the scope list in CLAUDE.md §6.
+- Use scopeless commits (`feat:`, `test:`, `chore:`, `docs:`).
+
+**Decision:** Scopeless commits. Do not extend the §6 scope list.
+
+**Rationale:** The §6 scope list describes Aegis-internal code layers. The dummy origin is infrastructure outside the hexagon. Inventing a `workers` scope would be taxonomy for its own sake. Scopeless Conventional Commits are valid per the spec (scope is optional). Recent docs and bookkeeping commits in this repo have been scopeless — this is consistent.
+
+**Consequences:** Commits for dummy-origin and any future `workers/` additions carry no scope. This is deliberate. If a future worker is part of Aegis proper (not a test fixture), a scope decision should be made at that point.
+
+**Links:** CLAUDE.md §6, Phase: 01 | Task: 1.1-dummy-origin
+
+---
+
 ## 2026-04-21 — Repository scaffold and guardrails
 
 **Context:** Project start. Need a structure that lets a fresh Claude Code session pick up deterministically and enforces TDD + hexagonal boundaries + human-in-the-loop reviews.
