@@ -17,7 +17,7 @@ Before adding inference on the hot path, we need rock-solid plumbing: request pa
   - Deployed separately (or same repo, separate wrangler config).
   - Tests: contract tests for each endpoint.
 
-- [ ] **1.2 — `PayloadExtractor` (domain-adjacent, no ports yet)**
+- [x] **1.2 — `PayloadExtractor` (domain-adjacent, no ports yet)**
   - Pure function: given a `Request`, return `{ method, path, query: Record<string,string>, body: string | null }`.
   - Tests: unit tests covering GET with query, POST with JSON, POST with form-encoded, binary bodies (return null), oversize bodies (truncate + flag).
   - **Important:** This is still pure TS. No Worker types here — accept a plain `URL` + headers + body reader.
