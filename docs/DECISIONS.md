@@ -235,6 +235,36 @@ Format per entry:
 
 ---
 
+## 2026-04-23 — PayloadExtractor: location, signature, and return shape
+
+**Context:** Task 1.2 requires a pure-TS function that extracts a structured payload from an incoming HTTP request. Three design questions needed explicit decisions before any code was written: (1) where the file lives in the hexagonal layout, (2) what parameter list avoids a Workers runtime dependency, and (3) what return shape satisfies both the phase spec and the "truncate + flag" test requirement.
+
+**Options:**
+- *Location (a) `src/domain/payload/`* — inside the domain boundary; ESLint `no-restricted-imports` covers it; co-located with the Phase 2 `Payload` VO it will eventually feed. **Chosen.**
+- *Location (b) `src/interfaces/http/`* — conceptually correct (HTTP parsing is a driver concern), but then the function could not be written as plain TS without a Cloudflare `Request` type in scope. Rejected.
+- *Location (c) `src/domain/` flat file* — avoids pre-creating `src/domain/payload/` before Phase 2, but leaves a loose file and pre-empts Phase 2's directory structure anyway. Rejected.
+- *Signature: accept `Request`* — `Request` is Web Platform, not Workers-specific. Rejected on pragmatic grounds: a decomposed `(method, url, headers, body)` signature makes the contract explicit, is trivially constructed from any `Request`, and removes any temptation to reach for `request.cf` or other Workers-only properties in a future refactor.
+- *Return `body: string | null` only (no flag)* — the phase spec states this, but "truncate + flag" in the test list is unresolvable without a flag field. Rejected.
+- *Return `bodyCapped` on the existing shape* — adds one boolean, backward-compatible with the spec's `{ method, path, query, body }` core. **Chosen.**
+
+**Decision:**
+- File: `src/domain/payload/payload-extractor.ts`
+- Signature: `extractPayload(method: string, url: URL, headers: Headers, body: ReadableStream<Uint8Array> | null): Promise<ExtractedPayload>`
+- Return: `{ method, path, query: Record<string,string>, body: string | null, bodyCapped: boolean }`
+- `MAX_BODY_BYTES = 8 * 1024` — matches the "up to 8 KB" limit explicitly stated in README.md
+- Text content type whitelist (opt-in): `text/*`, `application/json`, `application/x-www-form-urlencoded`. Everything else → `body: null`. List is intentionally narrow per project scope.
+- Missing `Content-Type` header → treated as binary → `body: null`. TODO entry added for Phase 4 to revisit (attacker tools may deliberately omit the header).
+- Empty body stream → `body: ""` (not `null`). A present-but-empty stream is semantically distinct from no body.
+- Duplicate query keys → last-write-wins (`Record<string,string>` per phase spec).
+
+**Rationale:** Keeping the file in `src/domain/payload/` makes the ESLint boundary rule self-documenting: any Cloudflare import here will fail lint immediately. The decomposed signature is the minimal API surface — the caller (task 1.3's `waf-handler.ts`) destructures from a `Request` in one line; no wrapper needed. `bodyCapped` is the smallest possible addition that resolves the spec ambiguity without inventing new abstractions.
+
+**Consequences:** `src/domain/payload/` exists before Phase 2 creates the `Payload` VO. That is intentional — the extractor's output feeds the VO. Phase 2 may reshape `query` from `Record<string,string>` to `Record<string,string[]>` if multi-value query params are needed; tracked in TODO.
+
+**Links:** `src/domain/payload/payload-extractor.ts`, `test/domain/payload/payload-extractor.spec.ts`, Phase: 01 | Task: 1.2-payload-extractor
+
+---
+
 ## 2026-04-23 — scopeless commits for workers/ (no scope taxonomy for test fixtures)
 
 **Context:** CLAUDE.md §6 defines a fixed scope list for Conventional Commits: `{domain, app, adapter-ai, adapter-vector, adapter-d1, adapter-kv, http, ci, docs, seed}`. The dummy origin Worker does not map to any of these. Adding a `workers` scope would imply the scope list covers things outside the Aegis hexagon, which contradicts the intent of the list.
