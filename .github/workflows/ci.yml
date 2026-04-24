@@ -32,6 +32,9 @@ jobs:
       - name: Verify
         run: npm run verify
 
+      - name: Coverage
+        run: npm run test:coverage
+
       - name: Upload coverage
         uses: actions/upload-artifact@v4
         if: always() && hashFiles('coverage/**') != ''

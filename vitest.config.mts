@@ -47,7 +47,15 @@ export default {
 
 export default defineWorkersConfig({
 	test: {
-		exclude: ["workers/**", "node_modules/**"],
+		// Domain, application, and ports tests run in the Node unit pool
+		// (vitest.unit.config.mts). Keep them out of the workers pool.
+		exclude: [
+			"workers/**",
+			"node_modules/**",
+			"test/domain/**",
+			"test/application/**",
+			"test/ports/**",
+		],
 		poolOptions: {
 			workers: {
 				wrangler: { configPath: "./wrangler.jsonc" },
