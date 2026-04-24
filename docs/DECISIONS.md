@@ -360,6 +360,29 @@ Format per entry:
 
 ---
 
+## 2026-04-24 — Split test environments: workers pool vs. Node pool for coverage (task 2.0)
+
+**Context:** `@vitest/coverage-v8` uses `node:inspector.Session` internally to collect V8 coverage data. `@cloudflare/vitest-pool-workers` runs tests inside workerd, where `node:inspector` is not available. The two packages cannot coexist in a single vitest config — running `--coverage` with the workers pool throws at startup. This was deferred from Phase 0 (see DECISIONS.md 2026-04-22 — Defer coverage instrumentation) and the split is the first task of Phase 2 so domain coverage is measured from the moment domain code arrives.
+
+**Options:**
+- **(a) Single config, custom coverage provider shim** — write a provider that fakes or proxies V8 coverage without `node:inspector`. *Rejected — exotic, undocumented, fragile maintenance burden.*
+- **(b) Run coverage in a separate CI step that re-runs all tests in Node env** — no split config, but all workers-pool tests would fail in plain Node (no `env.ORIGIN`, no `SELF`, no workerd globals). *Rejected — structurally broken.*
+- **(c) Split into two configs: `vitest.unit.config.mts` (Node env, no workers pool) for domain/application/ports; `vitest.config.mts` (workers pool) for interfaces/integration** — coverage runs only against the unit config, where `node:inspector` is available. Domain code never depends on Workers types so Node env is perfectly valid for domain tests. **Chosen.**
+
+**Decision:** Two vitest configs:
+- `vitest.unit.config.mts` — `defineConfig` from plain vitest; Node environment; `include: ["test/domain/**", "test/application/**", "test/ports/**"]`; coverage via `@vitest/coverage-v8` with `reporter: ["text", "json-summary"]`.
+- `vitest.config.mts` — `defineWorkersConfig` from `@cloudflare/vitest-pool-workers`; workerd environment; adds `test/domain/**`, `test/application/**`, `test/ports/**` to its `exclude` list so domain tests run in exactly one pool.
+- `package.json` gains `test:unit`, `test:workers`, `test:coverage` scripts; `test` runs both in sequence; `verify` uses `test` (unchanged behavior).
+- CI gains a `Coverage` step (`npm run test:coverage`) after `Verify`, with `Upload coverage` artifact and `Coverage threshold check` (enforced by `scripts/check-coverage.mjs`).
+
+**Rationale:** The split matches the hexagonal boundary: domain code is pure TS, so it belongs in the Node pool. Adapter/integration tests need workerd, so they stay in the workers pool. Coverage on Workers-pool tests would require a different provider strategy (istanbul via `__coverage__` global injection) — worth doing in a future phase if adapter coverage matters, but out of scope for task 2.0.
+
+**Consequences:** Coverage is measured for `src/domain/**`, `src/application/**`, `src/ports/**` only. Adapters are not instrumented at task 2.0 scope. Per-path thresholds (domain ≥ 95%, application ≥ 90%, adapters ≥ 80%) are enforced by `scripts/check-coverage.mjs`; the adapters threshold is latent until adapter files appear. If a future task adds a domain test that requires workerd, it must go in the workers pool config (and will not count toward coverage).
+
+**Links:** `vitest.unit.config.mts`, `vitest.config.mts`, `package.json`, `.github/workflows/ci.yml`, `scripts/check-coverage.mjs`, docs/phases/phase-02-domain-core.md task 2.0
+
+---
+
 ## 2026-04-21 — Repository scaffold and guardrails
 
 **Context:** Project start. Need a structure that lets a fresh Claude Code session pick up deterministically and enforces TDD + hexagonal boundaries + human-in-the-loop reviews.
