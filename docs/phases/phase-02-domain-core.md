@@ -1,6 +1,6 @@
 # Phase 2 — Domain Core & Policy
 
-**Status:** ○ PENDING
+**Status:** ▶ IN PROGRESS
 **Goal:** Pure-TS domain layer, fully unit-tested, zero Cloudflare dependencies.
 
 ## Entry Criteria

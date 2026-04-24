@@ -1,6 +1,6 @@
 # Phase 1 — Dummy Origin & Reverse Proxy
 
-**Status:** ▶ IN PROGRESS
+**Status:** ✔ DONE
 **Goal:** Prove the request-path plumbing. Worker sits in front of a tiny dummy origin and forwards requests. No AI yet.
 
 ## Entry Criteria
@@ -31,13 +31,13 @@ Before adding inference on the hot path, we need rock-solid plumbing: request pa
   - A tiny logger that emits JSON to `console.log`. Fields: `ts`, `reqId`, `method`, `path`, `verdict`, `latencyMs`.
   - Tests: unit tests on the logger.
 
-- [ ] **1.5 — Manual-test recipe**
+- [x] **1.5 — Manual-test recipe**
   - `docs/manual-testing/phase-01.md`: how to run both Workers locally, send curl requests, read logs.
 
 ## Exit Criteria
-- [ ] All tasks merged.
-- [ ] Human can run `npm run dev` and hit `curl localhost:8787/echo?q=hello` and see `hello` echoed from the dummy origin, with a structured log line showing `verdict=ALLOW`.
-- [ ] Test coverage on `src/` ≥ 90%.
+- [x] All tasks merged.
+- [x] Human can run `npm run dev:dummy-origin` and hit `curl localhost:8787/echo?q=hello` and see `hello` echoed from the dummy origin, with a structured log line showing `verdict=ALLOW`.
+- [x] Test coverage on `src/` ≥ 90%.
 
 ## Human Checkpoint
 Human runs the manual-test recipe and confirms the proxy works end-to-end.

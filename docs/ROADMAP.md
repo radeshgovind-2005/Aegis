@@ -18,7 +18,7 @@
 
 ---
 
-## Phase 1 — Dummy Origin & Reverse Proxy  ▶ IN PROGRESS
+## Phase 1 — Dummy Origin & Reverse Proxy  ✔ DONE
 **Goal:** The Worker acts as a reverse proxy in front of a tiny dummy origin. No AI yet. Prove the request-path plumbing.
 
 - See `docs/phases/phase-01-reverse-proxy.md`
@@ -26,7 +26,7 @@
 
 ---
 
-## Phase 2 — Domain Core & Policy  ○ PENDING
+## Phase 2 — Domain Core & Policy  ▶ IN PROGRES
 **Goal:** Pure-TS domain layer: `Payload`, `Verdict`, `SimilarityPolicy`. Fully unit-tested, zero Cloudflare dependencies. This is the hexagon's core.
 
 - See `docs/phases/phase-02-domain-core.md`
