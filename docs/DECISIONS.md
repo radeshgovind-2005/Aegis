@@ -360,6 +360,25 @@ Format per entry:
 
 ---
 
+## 2026-04-29 — Verdict: TypeScript namespace merged with type alias (not a class)
+
+**Context:** Task 2.2 requires factory functions `Verdict.allow()`, `Verdict.block(...)`, `Verdict.suspicious(...)` on a type that is a discriminated union. The obvious approach is a class with static methods, but TypeScript does not allow a `type Verdict = …` alias and a `class Verdict` to share the same name in the same module.
+
+**Options:**
+- *Rename the type* (e.g. `VerdictShape`) and export `class Verdict` for factories. Rejected — forces callers to import two names; the type annotation `VerdictShape` is awkward when `Verdict` is what the domain talks about.
+- *Use a class with static methods, no separate type alias* — `Verdict` is the class and instances are its return type. Rejected — callers would write `new Verdict(...)` or store a class reference; factories returning plain objects would return `object` unless overloaded carefully. Adds unnecessary machinery.
+- *TypeScript namespace merged with type alias* — `export type Verdict = …` and `export namespace Verdict { export function allow() … }`. TypeScript merges the two into one symbol: `Verdict` is both the type and the namespace containing the factories. **Chosen.**
+
+**Decision:** `type Verdict` is the discriminated union. `namespace Verdict` holds `allow()`, `block()`, `suspicious()`. Callers write `Verdict.allow()` and annotate with `Verdict` — one import, one name.
+
+**Rationale:** Namespace/type merging is the idiomatic TypeScript pattern for "named constructors on a union type". The factories return plain `readonly` objects — no class instances, no prototype chain — so they serialise to JSON trivially and impose zero runtime overhead.
+
+**Consequences:** `eslint-disable @typescript-eslint/no-namespace` comment required on the namespace declaration (the rule guards against namespace abuse, but this is the intended use case). The disable comment is self-documenting.
+
+**Links:** `src/domain/verdict/verdict.ts`, Phase: 02 | Task: 2.2-verdict-value-object
+
+---
+
 ## 2026-04-29 — Payload.normalize() preserves special characters; one decoding pass only
 
 **Context:** Task 2.1 requires `Payload.normalize()` to produce the canonical string passed to the embedding model. Two design choices needed explicit decisions: (1) whether to strip characters like `<`, `>`, `{`, `}`, `'`, `"` that often appear in attack probes, and (2) whether to apply `decodeURIComponent` once or in a loop until no further decoding occurs.
