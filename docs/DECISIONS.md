@@ -360,6 +360,27 @@ Format per entry:
 
 ---
 
+## 2026-04-29 — Payload.normalize() preserves special characters; one decoding pass only
+
+**Context:** Task 2.1 requires `Payload.normalize()` to produce the canonical string passed to the embedding model. Two design choices needed explicit decisions: (1) whether to strip characters like `<`, `>`, `{`, `}`, `'`, `"` that often appear in attack probes, and (2) whether to apply `decodeURIComponent` once or in a loop until no further decoding occurs.
+
+**Options:**
+- *Strip special chars (aggressive normalization)* — simplifies the embedding input and could reduce noise. Rejected: the embedding model (`bge-large-en`) is trained on natural text that includes punctuation and symbols; stripping them changes the semantic fingerprint and may cause benign inputs to appear more similar to attack patterns (false positives). The whole point of using a semantic embedding is that the model understands context, not that we pre-process away the evidence.
+- *Multi-pass decoding* — decode until the string stabilises, collapsing `%2520` → `%20` → space in two passes. Rejected: this hides double-encoding, which is itself a common WAF-evasion signal. The first decoding pass is enough to normalize legitimately encoded input; leaving a second layer of encoding visible means the embedding sees the evasion attempt as-is.
+- *One decoding pass, preserve all special chars* — **Chosen.**
+
+**Decision:**
+- `normalize()` pipeline: `decodeURIComponent` (one pass, malformed sequences fall through to raw value) → `.toLowerCase()` → `.trim()` → `.replace(/\s+/g, " ")`.
+- Characters `< > { } ' " ; -- /* */` and other injection-relevant chars are passed through unchanged.
+
+**Rationale:** The embedding model must see the raw attack structure. A `<script>` tag should look like a script tag to the model, not like a sequence of unrecognisable tokens after stripping. Preserving the full character set also means the distance between a sanitised payload and an attack payload remains meaningful in the vector space.
+
+**Consequences:** `normalize()` does not constitute sanitisation. It must never be used as a security boundary — only as a preprocessing step before embedding. That constraint is documented in the docstring. If the embedding model proves insensitive to special chars in Phase 5 benchmarks, revisit this decision.
+
+**Links:** `src/domain/payload/payload.ts`, `test/domain/payload/payload.spec.ts`, Phase: 02 | Task: 2.1-payload-value-object
+
+---
+
 ## 2026-04-24 — Split test environments: workers pool vs. Node pool for coverage (task 2.0)
 
 **Context:** `@vitest/coverage-v8` uses `node:inspector.Session` internally to collect V8 coverage data. `@cloudflare/vitest-pool-workers` runs tests inside workerd, where `node:inspector` is not available. The two packages cannot coexist in a single vitest config — running `--coverage` with the workers pool throws at startup. This was deferred from Phase 0 (see DECISIONS.md 2026-04-22 — Defer coverage instrumentation) and the split is the first task of Phase 2 so domain coverage is measured from the moment domain code arrives.
