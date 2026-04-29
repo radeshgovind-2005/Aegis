@@ -127,12 +127,61 @@ npm run verify
 # Dummy-origin tests: 6 passed
 ```
 
+---
+
+## Task 2.2 — `Verdict` value object
+
+### 1. Run the unit tests
+
+```bash
+npm run test:unit
+# Expected: exits 0
+# test/domain/verdict/verdict.spec.ts: 12 tests passed
+# (plus 34 existing tests)
+```
+
+### 2. Check coverage
+
+```bash
+npm run test:coverage
+# Expected:
+#   verdict/verdict.ts | 100 | 100 | 100 | 100
+```
+
+### 3. Quick REPL smoke-test (optional)
+
+```bash
+node --input-type=module <<'EOF'
+import { Verdict } from "./src/domain/verdict/verdict.js";
+
+const allow = Verdict.allow();
+console.log(allow);                         // { kind: 'ALLOW' }
+console.log(JSON.stringify(allow));         // {"kind":"ALLOW"}
+
+const block = Verdict.block("vec-123", 0.93, "sqli");
+console.log(block);
+// { kind: 'BLOCK', matchId: 'vec-123', similarity: 0.93, category: 'sqli' }
+
+const suspicious = Verdict.suspicious(0.77);
+console.log(suspicious);                    // { kind: 'SUSPICIOUS', similarity: 0.77 }
+
+// Round-trip
+console.log(
+  JSON.stringify(JSON.parse(JSON.stringify(block))) === JSON.stringify(block)
+); // true
+EOF
+```
+
+---
+
 ### Phase 2 (partial) exit criteria checklist
 
-Tasks 2.1 only — update this list as later tasks land.
+Tasks 2.1–2.2 — update this list as later tasks land.
 
 - [ ] `npm run verify` exits 0
-- [ ] `npm run test:coverage` shows `payload.ts` at 100% line coverage
+- [ ] `npm run test:coverage` shows `payload.ts` and `verdict.ts` at 100% line coverage
 - [ ] `grep -rE '(cloudflare:|@cloudflare/)' src/domain/` returns nothing
 - [ ] `new Payload("")` throws `PayloadValidationError`
 - [ ] `new Payload("SELECT 1").normalize()` returns `"select 1"`
+- [ ] `Verdict.allow()` returns `{ kind: "ALLOW" }`
+- [ ] `JSON.parse(JSON.stringify(Verdict.block("id", 0.9, "sqli")))` deep-equals the original
