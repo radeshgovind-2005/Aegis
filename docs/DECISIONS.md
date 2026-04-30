@@ -360,6 +360,30 @@ Format per entry:
 
 ---
 
+## 2026-04-29 — SimilarityPolicy: class with evaluate(); MatchResult defined in domain
+
+**Context:** Task 2.3 requires a configurable policy that maps vector-index match results to a Verdict. Two design questions: (1) function vs injectable class, and (2) where `MatchResult` lives given domain cannot import from ports.
+
+**Options:**
+- *Top-level pure function `applyPolicy(matches, options)`* — maximally simple, but task 2.6 needs to inject a pre-configured policy instance. A function would require partial application or passing options on every call; neither is as clean as an instance.
+- *Class `SimilarityPolicy` with `evaluate(matches)`* — holds thresholds in constructor, `evaluate` is the pure method. Task 2.6 receives an instance and calls `evaluate`. **Chosen.**
+- *`MatchResult` in `src/ports/`* — domain cannot import from ports (ESLint boundary rule). Rejected.
+- *`MatchResult` in `src/domain/policy/similarity-policy.ts`* — domain-owned, ports import from domain (dependency arrow points inward). **Chosen.**
+
+**Decision:**
+- `SimilarityPolicy` is a class. Constructor takes `PolicyOptions` (blockAt, suspiciousAt with defaults 0.85 / 0.75). Throws if `suspiciousAt >= blockAt`.
+- `evaluate(matches: MatchResult[]): Verdict` is pure — no I/O, no side-effects.
+- Tie-breaking: first match with highest score wins (input order from Vectorize is score-descending, so first-tied is as good as any).
+- `MatchResult` is exported from `src/domain/policy/similarity-policy.ts`. `VectorIndexPort` (task 2.5) will import it from there.
+
+**Rationale:** The class pattern makes the policy injectable and testable in isolation from the application service. The `evaluate` method is pure despite living on a class — it only reads `this.blockAt` and `this.suspiciousAt`, which are set at construction time and never mutated.
+
+**Consequences:** `MatchResult` is a domain type, not a ports type. Any future reshape of `MatchResult` (e.g. adding a `vector` field) requires a domain change, not just a ports change. Acceptable — the type is simple and stable.
+
+**Links:** `src/domain/policy/similarity-policy.ts`, `test/domain/policy/similarity-policy.spec.ts`, Phase: 02 | Task: 2.3-similarity-policy
+
+---
+
 ## 2026-04-29 — Verdict: TypeScript namespace merged with type alias (not a class)
 
 **Context:** Task 2.2 requires factory functions `Verdict.allow()`, `Verdict.block(...)`, `Verdict.suspicious(...)` on a type that is a discriminated union. The obvious approach is a class with static methods, but TypeScript does not allow a `type Verdict = …` alias and a `class Verdict` to share the same name in the same module.

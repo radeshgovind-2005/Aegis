@@ -174,9 +174,61 @@ EOF
 
 ---
 
+## Task 2.3 — `SimilarityPolicy`
+
+### 1. Run the unit tests
+
+```bash
+npm run test:unit
+# Expected: exits 0
+# test/domain/policy/similarity-policy.spec.ts: 23 tests passed
+# (plus 46 existing tests)
+```
+
+### 2. Check coverage
+
+```bash
+npm run test:coverage
+# Expected:
+#   policy/similarity-policy.ts | 100 | 100 | 100 | 100
+```
+
+### 3. Quick REPL smoke-test (optional)
+
+```bash
+node --input-type=module <<'EOF'
+import { SimilarityPolicy } from "./src/domain/policy/similarity-policy.js";
+
+const policy = new SimilarityPolicy();
+
+// Empty → ALLOW
+console.log(policy.evaluate([]));
+// { kind: 'ALLOW' }
+
+// Above blockAt → BLOCK
+console.log(policy.evaluate([{ id: "v1", score: 0.92, category: "sqli" }]));
+// { kind: 'BLOCK', matchId: 'v1', similarity: 0.92, category: 'sqli' }
+
+// Between thresholds → SUSPICIOUS
+console.log(policy.evaluate([{ id: "v1", score: 0.78, category: "xss" }]));
+// { kind: 'SUSPICIOUS', similarity: 0.78 }
+
+// Below both → ALLOW
+console.log(policy.evaluate([{ id: "v1", score: 0.5, category: "rce" }]));
+// { kind: 'ALLOW' }
+
+// Custom thresholds
+const strict = new SimilarityPolicy({ blockAt: 0.7, suspiciousAt: 0.6 });
+console.log(strict.evaluate([{ id: "v1", score: 0.7, category: "lfi" }]));
+// { kind: 'BLOCK', matchId: 'v1', similarity: 0.7, category: 'lfi' }
+EOF
+```
+
+---
+
 ### Phase 2 (partial) exit criteria checklist
 
-Tasks 2.1–2.2 — update this list as later tasks land.
+Tasks 2.1–2.3 — update this list as later tasks land.
 
 - [ ] `npm run verify` exits 0
 - [ ] `npm run test:coverage` shows `payload.ts` and `verdict.ts` at 100% line coverage
@@ -185,3 +237,6 @@ Tasks 2.1–2.2 — update this list as later tasks land.
 - [ ] `new Payload("SELECT 1").normalize()` returns `"select 1"`
 - [ ] `Verdict.allow()` returns `{ kind: "ALLOW" }`
 - [ ] `JSON.parse(JSON.stringify(Verdict.block("id", 0.9, "sqli")))` deep-equals the original
+- [ ] `new SimilarityPolicy().evaluate([])` returns `{ kind: "ALLOW" }`
+- [ ] Score ≥ 0.85 → BLOCK; ≥ 0.75 → SUSPICIOUS; < 0.75 → ALLOW
+- [ ] `new SimilarityPolicy({ blockAt: 0.8, suspiciousAt: 0.8 })` throws
