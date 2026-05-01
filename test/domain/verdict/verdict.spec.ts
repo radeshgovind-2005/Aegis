@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { Verdict } from "../../../src/domain/verdict/verdict";
+import { Verdict, VerdictSchema } from "../../../src/domain/verdict/verdict";
 
 // ---------------------------------------------------------------------------
 // Factory shapes
@@ -115,5 +115,45 @@ describe("Verdict discriminated union narrowing", () => {
       "block:id:0.9:sqli",
       "suspicious:0.77",
     ]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// VerdictSchema (Zod)
+// ---------------------------------------------------------------------------
+
+describe("VerdictSchema", () => {
+  it("parses a valid ALLOW verdict", () => {
+    expect(VerdictSchema.parse({ kind: "ALLOW" })).toEqual({ kind: "ALLOW" });
+  });
+
+  it("parses a valid BLOCK verdict", () => {
+    const raw = { kind: "BLOCK", matchId: "v1", similarity: 0.92, category: "sqli" };
+    expect(VerdictSchema.parse(raw)).toEqual(raw);
+  });
+
+  it("parses a valid SUSPICIOUS verdict", () => {
+    const raw = { kind: "SUSPICIOUS", similarity: 0.78 };
+    expect(VerdictSchema.parse(raw)).toEqual(raw);
+  });
+
+  it("rejects an unknown kind", () => {
+    expect(() => VerdictSchema.parse({ kind: "UNKNOWN" })).toThrow();
+  });
+
+  it("rejects BLOCK missing matchId", () => {
+    expect(() =>
+      VerdictSchema.parse({ kind: "BLOCK", similarity: 0.9, category: "sqli" }),
+    ).toThrow();
+  });
+
+  it("round-trips all three variants through JSON", () => {
+    for (const v of [
+      Verdict.allow(),
+      Verdict.block("id", 0.9, "xss"),
+      Verdict.suspicious(0.77),
+    ]) {
+      expect(VerdictSchema.parse(JSON.parse(JSON.stringify(v)))).toEqual(v);
+    }
   });
 });

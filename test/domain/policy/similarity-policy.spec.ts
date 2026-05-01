@@ -4,6 +4,7 @@ import {
   SimilarityPolicy,
   DEFAULT_BLOCK_AT,
   DEFAULT_SUSPICIOUS_AT,
+  MatchResultSchema,
 } from "../../../src/domain/policy/similarity-policy";
 import type { MatchResult } from "../../../src/domain/policy/similarity-policy";
 
@@ -184,5 +185,37 @@ describe("SimilarityPolicy constructor validation", () => {
 
   it("accepts equal-looking but valid config (suspiciousAt < blockAt)", () => {
     expect(() => new SimilarityPolicy({ blockAt: 0.85, suspiciousAt: 0.84 })).not.toThrow();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// MatchResultSchema (Zod)
+// ---------------------------------------------------------------------------
+
+describe("MatchResultSchema", () => {
+  it("parses a valid MatchResult", () => {
+    const raw = { id: "vec-1", score: 0.92, category: "sqli" };
+    expect(MatchResultSchema.parse(raw)).toEqual(raw);
+  });
+
+  it("rejects a missing id", () => {
+    expect(() => MatchResultSchema.parse({ score: 0.9, category: "sqli" })).toThrow();
+  });
+
+  it("rejects a missing score", () => {
+    expect(() => MatchResultSchema.parse({ id: "v1", category: "sqli" })).toThrow();
+  });
+
+  it("rejects a missing category", () => {
+    expect(() => MatchResultSchema.parse({ id: "v1", score: 0.9 })).toThrow();
+  });
+
+  it("rejects a non-numeric score", () => {
+    expect(() => MatchResultSchema.parse({ id: "v1", score: "high", category: "sqli" })).toThrow();
+  });
+
+  it("round-trips through JSON", () => {
+    const raw = { id: "vec-42", score: 0.87, category: "xss" };
+    expect(MatchResultSchema.parse(JSON.parse(JSON.stringify(raw)))).toEqual(raw);
   });
 });
