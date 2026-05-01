@@ -360,6 +360,22 @@ Format per entry:
 
 ---
 
+## 2026-05-01 — Task 2.4: extend boundary guard to cover all four spec patterns
+
+**Context:** Task 2.4 requires the `no-restricted-imports` rule to forbid `cloudflare:*`, `@cloudflare/*`, `./adapters/*`, and `../adapters/*` inside `src/domain/**`. The rule was added in task 0.1 and already covered `cloudflare:*`, `@cloudflare/*`, `../adapters/*`, `../../adapters/*`. The one missing pattern was `./adapters/*`. The boundary guard (task 0.2) tested only the `cloudflare:*` case.
+
+**Decision:**
+- Add `./adapters/*` to the `no-restricted-imports` patterns in `.eslintrc.cjs`.
+- Extend `test/domain/boundary.guard.ts` from a single test to a four-case table (`cloudflare:*`, `@cloudflare/*`, `../adapters/*`, `./adapters/*`). Each case lints a minimal import statement against a virtual `src/domain/` filepath and asserts the rule fires.
+
+**Rationale:** The four-case guard is the automated form of the "add a commented-out violating line, confirm it flags, remove" step described in the task spec. The guard runs on every `npm run verify`, so a misconfigured or missing pattern fails CI rather than silently escaping. The RED step was real: the guard failed on `./adapters/*` before the pattern was added to the config.
+
+**Consequences:** The guard output changes from `flagged 1 violation(s) correctly` to `all 4 boundary patterns flagged correctly`. No CI step depends on parsing that string; only the exit code matters. The guard remains a tsx script (not a vitest test) per the task 0.2 decision — conversion to vitest is still possible in a future task if desired.
+
+**Links:** `.eslintrc.cjs`, `test/domain/boundary.guard.ts`, Phase: 02 | Task: 2.4-eslint-boundary-guard
+
+---
+
 ## 2026-04-29 — SimilarityPolicy: class with evaluate(); MatchResult defined in domain
 
 **Context:** Task 2.3 requires a configurable policy that maps vector-index match results to a Verdict. Two design questions: (1) function vs injectable class, and (2) where `MatchResult` lives given domain cannot import from ports.
