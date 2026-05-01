@@ -226,9 +226,43 @@ EOF
 
 ---
 
+## Task 2.4 — ESLint boundary guard
+
+### 1. Run the boundary guard
+
+```bash
+npm run test:boundary
+# Expected: PASS: all 4 boundary patterns flagged correctly.
+```
+
+### 2. Verify a violation would fail CI (destructive — restore afterward)
+
+```bash
+# Temporarily add a forbidden import to any domain file, e.g.:
+echo "import type { Env } from 'cloudflare:workers';" >> src/domain/payload/payload.ts
+
+npm run lint
+# Expected: ESLint error — "Domain / application / ports layers must not depend on Cloudflare SDKs..."
+
+# Restore
+git checkout src/domain/payload/payload.ts
+```
+
+### 3. Confirm the grep exit-criteria pass
+
+```bash
+grep -rE '(cloudflare:|@cloudflare/)' src/domain/ src/application/ src/ports/
+# Expected: no output (exit 0 means matches found, which would be a failure)
+# Correct expected: command exits 1 (no matches) — verify by:
+grep -rE '(cloudflare:|@cloudflare/)' src/domain/ src/application/ src/ports/ || echo "CLEAN"
+# Expected: CLEAN
+```
+
+---
+
 ### Phase 2 (partial) exit criteria checklist
 
-Tasks 2.1–2.3 — update this list as later tasks land.
+Tasks 2.1–2.4 — update this list as later tasks land.
 
 - [ ] `npm run verify` exits 0
 - [ ] `npm run test:coverage` shows `payload.ts` and `verdict.ts` at 100% line coverage
@@ -240,3 +274,5 @@ Tasks 2.1–2.3 — update this list as later tasks land.
 - [ ] `new SimilarityPolicy().evaluate([])` returns `{ kind: "ALLOW" }`
 - [ ] Score ≥ 0.85 → BLOCK; ≥ 0.75 → SUSPICIOUS; < 0.75 → ALLOW
 - [ ] `new SimilarityPolicy({ blockAt: 0.8, suspiciousAt: 0.8 })` throws
+- [ ] `npm run test:boundary` prints `PASS: all 4 boundary patterns flagged correctly.`
+- [ ] Adding a `cloudflare:*` import to any `src/domain/` file causes `npm run lint` to error

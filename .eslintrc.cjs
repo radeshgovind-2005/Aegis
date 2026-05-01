@@ -80,6 +80,7 @@ module.exports = {
                 group: [
                   'cloudflare:*',
                   '@cloudflare/*',
+                  './adapters/*',
                   '../adapters/*',
                   '../../adapters/*',
                   '../interfaces/*',
