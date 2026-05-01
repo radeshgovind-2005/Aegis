@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 import { Verdict } from "../verdict/verdict";
 
 /**
@@ -10,6 +12,16 @@ import { Verdict } from "../verdict/verdict";
  * score is cosine similarity as returned by Vectorize for normalised vectors:
  * range [0, 1] in practice (theoretically [-1, 1] for un-normalised vectors).
  */
+/**
+ * Zod schema for MatchResult — used by adapters to validate raw Vectorize
+ * query responses before passing them into the domain.
+ */
+export const MatchResultSchema = z.object({
+  id: z.string(),
+  score: z.number(),
+  category: z.string(),
+});
+
 export interface MatchResult {
   id: string;
   score: number;

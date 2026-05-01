@@ -360,6 +360,26 @@ Format per entry:
 
 ---
 
+## 2026-05-01 — Task 2.5: MatchResult stays in domain; VerdictSchema and MatchResultSchema co-located with their types
+
+**Context:** Task 2.5 spec states "MatchResult/AuditEntry types live here [ports]". MatchResult cannot live in ports because `SimilarityPolicy` (domain) consumes it and domain cannot import from ports — that would invert the dependency arrow.
+
+**Decision:**
+- `MatchResult` stays in `src/domain/policy/similarity-policy.ts` (established in task 2.3). `VectorIndexPort` imports it from there and re-exports it for adapter convenience.
+- `MatchResultSchema` (Zod) is co-located with `MatchResult` in the domain file.
+- `VerdictSchema` (Zod) is added to `src/domain/verdict/verdict.ts` alongside the `Verdict` type it validates.
+- `AuditEntry` and `AuditEntrySchema` live in `src/ports/audit-log-port.ts`; the schema depends on `VerdictSchema` imported from domain (ports → domain import is allowed).
+- The three interface-only port files (`EmbeddingPort`, `VectorIndexPort`, `CachePort`) have no executable code and therefore report 0% coverage; `check-coverage.mjs` does not gate on `src/ports/` so this is not a threshold failure.
+- `zod@^3` added as a regular `dependency` (not devDependency) because schemas will be used at runtime in adapter code from Phase 4 onwards.
+
+**Rationale:** Keeping schemas next to their types means a type and its validator always move together. Splitting them across domain/ports would require updating two files for every shape change.
+
+**Consequences:** The task 2.5 spec note about MatchResult location is superseded by this decision. Any future reader of the ports layer should check `src/domain/policy/similarity-policy.ts` for MatchResult/MatchResultSchema.
+
+**Links:** `src/ports/`, `src/domain/verdict/verdict.ts`, `src/domain/policy/similarity-policy.ts`, Phase: 02 | Task: 2.5-ports
+
+---
+
 ## 2026-05-01 — Task 2.4: extend boundary guard to cover all four spec patterns
 
 **Context:** Task 2.4 requires the `no-restricted-imports` rule to forbid `cloudflare:*`, `@cloudflare/*`, `./adapters/*`, and `../adapters/*` inside `src/domain/**`. The rule was added in task 0.1 and already covered `cloudflare:*`, `@cloudflare/*`, `../adapters/*`, `../../adapters/*`. The one missing pattern was `./adapters/*`. The boundary guard (task 0.2) tested only the `cloudflare:*` case.

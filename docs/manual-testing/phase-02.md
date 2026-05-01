@@ -260,9 +260,61 @@ grep -rE '(cloudflare:|@cloudflare/)' src/domain/ src/application/ src/ports/ ||
 
 ---
 
+## Task 2.5 — Ports (interfaces + Zod schemas)
+
+### 1. Run the unit tests
+
+```bash
+npm run test:unit
+# Expected: exits 0
+# test/ports/audit-log-port.spec.ts:       11 tests passed
+# test/domain/verdict/verdict.spec.ts:     18 tests passed (6 new VerdictSchema)
+# test/domain/policy/similarity-policy.spec.ts: 29 tests passed (6 new MatchResultSchema)
+```
+
+### 2. Confirm port files exist
+
+```bash
+ls src/ports/
+# Expected:
+#   audit-log-port.ts  cache-port.ts  embedding-port.ts  vector-index-port.ts
+```
+
+### 3. Check no Cloudflare imports leak into ports
+
+```bash
+grep -rE '(cloudflare:|@cloudflare/)' src/ports/
+# Expected: no output
+```
+
+### 4. Verify AuditEntry Zod schema (optional REPL)
+
+```bash
+node --input-type=module <<'EOF'
+import { AuditEntrySchema } from "./src/ports/audit-log-port.js";
+
+const entry = {
+  reqId: "abc-123",
+  ts: "2026-05-01T12:00:00.000Z",
+  verdict: { kind: "BLOCK", matchId: "v1", similarity: 0.93, category: "sqli" },
+  latencyMs: 42,
+};
+console.log(AuditEntrySchema.parse(entry));
+// Expected: the entry printed back unchanged
+
+try {
+  AuditEntrySchema.parse({ ...entry, latencyMs: -1 });
+} catch (e) {
+  console.log("negative latencyMs rejected:", e.errors[0].message);
+}
+EOF
+```
+
+---
+
 ### Phase 2 (partial) exit criteria checklist
 
-Tasks 2.1–2.4 — update this list as later tasks land.
+Tasks 2.1–2.5 — update this list as later tasks land.
 
 - [ ] `npm run verify` exits 0
 - [ ] `npm run test:coverage` shows `payload.ts` and `verdict.ts` at 100% line coverage
@@ -276,3 +328,7 @@ Tasks 2.1–2.4 — update this list as later tasks land.
 - [ ] `new SimilarityPolicy({ blockAt: 0.8, suspiciousAt: 0.8 })` throws
 - [ ] `npm run test:boundary` prints `PASS: all 4 boundary patterns flagged correctly.`
 - [ ] Adding a `cloudflare:*` import to any `src/domain/` file causes `npm run lint` to error
+- [ ] `ls src/ports/` shows all four port files
+- [ ] `AuditEntrySchema.parse({ reqId:"r", ts:"t", verdict:{kind:"ALLOW"}, latencyMs:0 })` succeeds
+- [ ] `AuditEntrySchema.parse({ ..., latencyMs: -1 })` throws a Zod error
+- [ ] `VerdictSchema.parse({ kind: "ALLOW" })` returns `{ kind: "ALLOW" }`
