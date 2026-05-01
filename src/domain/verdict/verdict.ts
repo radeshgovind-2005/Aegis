@@ -1,3 +1,26 @@
+import { z } from "zod";
+
+/**
+ * Zod schema for runtime validation of Verdict objects when they cross system
+ * boundaries (e.g. deserialised from D1 rows or JSON responses).
+ *
+ * Mirrors the Verdict type exactly. Used by AuditEntrySchema (ports layer)
+ * and any adapter that needs to parse an external verdict shape.
+ */
+export const VerdictSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("ALLOW") }),
+  z.object({
+    kind: z.literal("BLOCK"),
+    matchId: z.string(),
+    similarity: z.number(),
+    category: z.string(),
+  }),
+  z.object({
+    kind: z.literal("SUSPICIOUS"),
+    similarity: z.number(),
+  }),
+]);
+
 /**
  * The outcome of classifying a single request payload.
  *
